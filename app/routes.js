@@ -1,115 +1,125 @@
 // app/routes.js
 var bcrypt = require('bcrypt-nodejs');
-
-var RESOURCES = Object.freeze({
-	INITIAL: "/", // get
-	LOGIN: "/v1/login", // post
-	LOGOUT: "/v1/logout", // post
-	USER: "/v1/user", // get
-	REG_USER: "/v1/user", // put
-	DEL_USER: "/v1/user", // del
-	RESET_PW: "/v1/user/resetpass", // post
-	USER_MMR: "/v1/user/mmr" // get = get, post = update
-});
-
-function formatErrorMessage(msg) {
-	var msgObj = new Object();
-	msgObj.name = "Error";
-	msgObj.message = new Object();
-	msgObj.message.name = "UserError",
-	msgObj.message.message = msg;
-	return msgObj;
-}
-
 module.exports = function(app, passport) {
 
-	app.get(RESOURCES.INITIAL, function(req, res) {
-		res.send('Restnode Game Service');
+	// =====================================
+	// HOME PAGE (with login links) ========
+	// =====================================
+	app.get('/', function(req, res) {
+		res.render('index.ejs'); // load the index.ejs file
 	});
 	
-	app.get(RESOURCES.LOGIN, function(req, res) {
-		res.send('GET Method not allowed.');
+	// =====================================
+	// OBS (open this in obs for rendering) 
+	// =====================================
+	app.get('/render', function(req,res) {
+		res.render('obs-render.ejs');
+	})
+
+
+	// =====================================
+	// LOGIN ===============================
+	// =====================================
+	// show the login form
+	app.get('/login', function(req, res) {
+
+		// render the page and pass in any flash data if it exists
+		res.render('login-weak.ejs', { message: req.flash('loginMessage') });
 	});
 
 	// process the login form
-	app.post(RESOURCES.LOGIN, function(req,res,next) {
-		console.log("User login");
-		passport.authenticate('local-login', {
-		}, function(err,usr,info){
-		console.log("Reached login callback.");
-		if(err)
-			res.send(err);
-		else if(!usr)
-			res.send(info);
-		else
-			res.send(usr);
-		})(req,res,next);
-	}, function(err,req,res,next) {
-		res.send(next);
-		});
+	app.post('/login',passport.authenticate('local-weak-login', {
+		successRedirect : '/app', // redirect to the secure app section
+		failureRedirect : '/login', // redirect back to the signup page if there is an error
+		failureFlash : true // allow flash messages
+		}), function(req, res) {
+        console.log("hello");
+		
+		if (req.body.remember) {
+          
+		  req.session.cookie.maxAge = 1000 * 60 * 3;
+        } else {
+          req.session.cookie.expires = false;
+        }
+      res.redirect('/');
+	});
 
-	app.put(RESOURCES.REG_USER, function(req,res,next) {
-		console.log("New user signup.");
-		passport.authenticate('local-signup', {
-		}, function(err,usr,info){
-		console.log("Reached signup callback.");
-		if(err)
-			res.send(err);
-		else if(!usr)
-			res.send(formatErrorMessage(info));
-		else
-			res.send(usr);
-		})(req,res,next);
-	}, function(err,req,res,next) {
-		console.log("ERROR: " +err);
-		res.send(501,'Internal Server Error');
-		});
+	// =====================================
+	// SIGNUP ==============================
+	// =====================================
+	// show the signup form
+	app.get('/signup', function(req, res) {
+
+		// render the page and pass in any flash data if it exists
+		res.render('signup.ejs', { message: req.flash('signupMessage') });
+	});
+
+	// process the signup form
+	app.post('/signup', passport.authenticate('local-signup', {
+		successRedirect : '/profile', // redirect to the secure profile section
+		failureRedirect : '/signup', // redirect back to the signup page if there is an error
+		failureFlash : true // allow flash messages
+	}));
 
 	// =====================================
 	// PROFILE SECTION =========================
 	// =====================================
 	// we will want this protected so you have to be logged in to visit
 	// we will use route middleware to verify this (the isLoggedIn function)
-	app.get(RESOURCES.USER, isLoggedIn, function(req, res) {
-		db.getUserById(req.user.id, function(err,usr,info){
-			if(err)
-				res.send(err);
-			else if(!usr)
-				res.send(formatErrorMessage(info));
-			else
-				res.send(usr);
-			})(req,res,next);
+	app.get('/profile', isLoggedIn, function(req, res) {
+		db.getUserApplications(req.user.id, function(err,data){
+			res.render('profile.ejs', {
+				user : req.user, // get the user out of session and pass to template
+				apps : data // pass the application data to the page
+			});
+		});		
 	});
 	
-	app.get(RESOURCES.USER_MMR, isLoggedIn, function(req, res) {
-		db.getMMRByUserId(req.user.id, function(err,usr,info){
-			if(err)
-				res.send(err);
-			else if(!usr)
-				res.send(formatErrorMessage(info));
-			else
-				res.send(usr);
-			})(req,res,next);
+	// =====================================
+	// APPLICATION SECTION =========================
+	// =====================================
+	// we will want this protected so you have to be logged in to visit
+	// we will use route middleware to verify this (the isLoggedIn function)
+	app.get('/app', isLoggedIn, function(req, res) {
+		var data = {};
+				res.render('app.ejs', {
+					app : data // pass the application data to the page
+				});
 	});
 	
-	app.post(RESOURCES.USER_MMR, isLoggedIn, function(req, res) {
-		db.UpdateMMRByUserId(req.user.id,req.user.mmr, function(err,usr,info){
-			if(err)
-				res.send(err);
-			else if(!usr)
-				res.send(formatErrorMessage(info));
-			else
-				res.send(usr);
-			})(req,res,next);
+	app.post('/setText', isLoggedIn, function(req, res) {
+		global.wss.broadcast(req.body.data);
+		res.redirect('/app');
 	});
-	
+
+	app.get('/command/:element/:cmd', isLoggedIn, function(req, res) {
+		var data = {};
+		data.command = req.params.cmd;
+		data.target = req.params.element;
+		global.wss.broadcast(data);
+		res.redirect('/app');
+	});
+
+	// =====================================
+	// FACEBOOK ROUTES =====================
+	// =====================================
+	// route for facebook authentication and login
+	//app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
+
+	// handle the callback after facebook has authenticated the user
+	/*app.get('/auth/facebook/callback',
+		passport.authenticate('facebook', {
+			successRedirect : '/profile',
+			failureRedirect : '/'
+		}));*/
+
 
 	// =====================================
 	// LOGOUT ==============================
 	// =====================================
-	app.get(RESOURCES.LOGOUT, function(req, res) {
+	app.get('/logout', function(req, res) {
 		req.logout();
-		res.redirect(RESOURCES.INITIAL);
+		res.redirect('/');
 	});
 };
 

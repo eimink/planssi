@@ -22,5 +22,6 @@ ws.onmessage = function(event) {
 
 ws.onclose = function() {
 	console.log("WebSocket closed.");
+	initWebSocket();
 }
 }

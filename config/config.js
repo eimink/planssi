@@ -3,21 +3,19 @@
 module.exports = {
 	
 	// Default port to listen
-	listen : 8080,
+	listen : 8888,
 	listenSSL : 8443,
+	listenWS : 9998,
 		
 	// Database driver
-	db_driver : "mongodb",
-	
-	// MongoDB specific
-	mongodb_uri : "vsaa",
+	db_driver : "mysql",
 	
 	// MySQL specific
 	mysql : {
 		host : "localhost",
 		user : "root",
 		password : "",
-		database : "vsaa"
+		database : "planssi"
 	},
 		
 	// MSSQL specific

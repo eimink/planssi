@@ -16,8 +16,20 @@ var app      = express();
 var passport = require('passport');
 var flash    = require('connect-flash');
 
+const WebSocket = require('ws');
+
 global.config = require('./config/config');
 global.db = require("./app/databases/"+config.db_driver);
+
+global.wss = new WebSocket.Server({ port: config.listenWS });
+
+global.wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+};
 
 require('./config/passport')(passport); // pass passport for configuration
 
@@ -31,10 +43,11 @@ app.configure(function() {
 	app.set('view engine', 'ejs'); // set up ejs for templating
 
 	// required for passport
-	app.use(express.session({ secret: 'planssiSecretKey123772' } )); // session secret
+	app.use(express.session({ secret: 'planssi1337402cthlja683ftw' } )); // session secret
 	app.use(passport.initialize());
 	app.use(passport.session()); // persistent login sessions
 	app.use(flash()); // use connect-flash for flash messages stored in session
+	app.use(express.static('client'));
 
 });
 
@@ -45,7 +58,8 @@ require('./app/routes.js')(app, passport); // load our routes and pass in our ap
 
 var httpServer = http.createServer(app);
 httpServer.listen(config.listen);
-console.log('planssi running on port ' + config.listen);
+console.log('planssi adminpanel running on port ' + config.listen);
+console.log('planssi websockets running on port ' + config.listenWS);
 
 // Support for HTTPS, uncomment to enable
 /*
