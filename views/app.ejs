@@ -20,24 +20,61 @@
 	</div>
 
 	<div class="row">
-
-		<!-- LOCAL INFORMATION -->
-		<div class="col-sm-12">
-			<div class="well">
-				<h3><span class="fa fa-user"></span>Background with dude</h3>
-					<a class="btn btn-default" href="#" onClick='FadeIn("bg_dyyd");'>fadeIn</a>
-					<a class="btn btn-default" href="#" onClick='FadeOut("bg_dyyd");'>fadeOut</a>
-				<h3><span class="fa fa-user"></span>Title bar</h3>
-					<a class="btn btn-default" href="#" onClick='FadeIn("title_bar_low");'>fadeIn</a>
-					<a class="btn btn-default" href="#" onClick='FadeOut("title_bar_low");'>fadeOut</a>
-			</div>
+		<div class="col-md-6 col-sm-6 col-xs-12">
+		<h3><span class="fa fa-user"></span> 2-row title bar</h3>
+		    <form method="post" id="title1">
+		      <input class="form-control" id="title1-row1" name="title1-row1" type="text"/>
+		      <input class="form-control" id="title1-row2" name="title1-row2" type="text"/>
+		     <a class="btn btn-default" href="#" onClick='FadeIn("title1");'>FadeIn</a>
+			 <a class="btn btn-default" href="#" onClick='FadeOut("title1");'>FadeOut</a>
+			 <a class="btn btn-default" href="#" onClick='SetText("title1");'>Set Texts</a>
+		     </form>
 		</div>
-
+		<div class="col-md-6 col-sm-6 col-xs-12">
+		<h3><span class="fa fa-user"></span> 3-row title bar</h3>
+		    <form method="post" id="title2">
+		      <input class="form-control" id="title2-row1" name="title2-row1" type="text"/>
+		      <input class="form-control" id="title2-row2" name="title2-row2" type="text"/>
+		      <input class="form-control" id="title2-row3" name="title2-row3" type="text"/>
+		     <a class="btn btn-default" href="#" onClick='FadeIn("title2");'>FadeIn</a>
+			 <a class="btn btn-default" href="#" onClick='FadeOut("title2");'>FadeOut</a>
+			 <a class="btn btn-default" href="#" onClick='SetText("title2");'>Set Texts</a>
+		     </form>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12">
+		<h3><span class="fa fa-user"></span> Fullscreen title</h3>
+		    <form method="post" id="bg">
+		      <input class="form-control" id="bg-row1" name="bg-row1" type="text"/>
+		      <input class="form-control" id="bg-row2" name="bg-row2" type="text"/>
+		      <input class="form-control" id="bg-row3" name="bg-row3" type="text"/>
+		      <input class="form-control" id="bg-row4" name="bg-row4" type="text"/>
+		      <input class="form-control" id="bg-row5" name="bg-row5" type="text"/>
+		      <input class="form-control" id="bg-row6" name="bg-row6" type="text"/>
+		     <a class="btn btn-default" href="#" onClick='FadeIn("bg");'>FadeIn</a>
+			 <a class="btn btn-default" href="#" onClick='FadeOut("bg");'>FadeOut</a>
+			 <a class="btn btn-default" href="#" onClick='SetText("bg");'>Set Texts</a>
+		     </form>
+		</div>
+		<div class="col-md-6 col-sm-6 col-xs-12">
+		<h3><span class="fa fa-user"></span> Fullscreen title with image</h3>
+		    <form method="post" id="bg_dyyd">
+		      <input class="form-control" id="bg_dyyd-row1" name="bg_dyyd-row1" type="text"/>
+		      <input class="form-control" id="bg_dyyd-row2" name="bg_dyyd-row2" type="text"/>
+		      <input class="form-control" id="bg_dyyd-row3" name="bg_dyyd-row3" type="text"/>
+		      <input class="form-control" id="bg_dyyd-row4" name="bg_dyyd-row4" type="text"/>
+		      <input class="form-control" id="bg_dyyd-row5" name="bg_dyyd-row5" type="text"/>
+		      <input class="form-control" id="bg_dyyd-row6" name="bg_dyyd-row6" type="text"/>
+		     <a class="btn btn-default" href="#" onClick='FadeIn("bg_dyyd");'>FadeIn</a>
+			 <a class="btn btn-default" href="#" onClick='FadeOut("bg_dyyd");'>FadeOut</a>
+			 <a class="btn btn-default" href="#" onClick='SetText("bg_dyyd");'>Set Texts</a>
+		     </form>
+		</div>
 	</div>
 
 </div>
 <script>
 function FadeIn(element) {
+	SetText(element);
 	 $.get("/command/"+element+"/fadeIn", function(data, status){
         console.log("Status: " + status);
     });
@@ -47,8 +84,23 @@ function FadeOut(element) {
         console.log("Status: " + status);
     });
 };
-function ParseElement(element) {
-		
+function SetText(element) {
+	$("#"+element).each(function(){
+    	var inputs = $(this).find(':input');
+    	var data = [];
+    	for(var i = 0; i < inputs.length; i++) {
+    		var row = {};
+    		row.name = inputs[i].name;
+    		row.value = $(inputs[i]).val();
+    		data.push(row);
+    		console.log(row);
+    	}
+    	var cmdObj={};
+    	cmdObj.command="setText";
+    	cmdObj.target=element;
+    	cmdObj.params = data;
+    	$.post("/setText", cmdObj);
+	});
 };
 </script>
 </body>

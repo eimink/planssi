@@ -88,7 +88,7 @@ module.exports = function(app, passport) {
 	});
 	
 	app.post('/setText', isLoggedIn, function(req, res) {
-		global.wss.broadcast(req.body.data);
+		global.wss.broadcast(req.body);
 		res.redirect('/app');
 	});
 

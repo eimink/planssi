@@ -14,7 +14,7 @@ ws.onmessage = function(event) {
 		} else if (data.command === "fadeOut") {
 			if (data.target) fadeOut(data.target);
 		} else if (data.command === "setText") {
-			if (data.target) setText(data.target, data.params);
+			if (data.target) setContent(data.target, data.params);
 		}
 	}
 	console.dir(event.data);
