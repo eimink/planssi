@@ -64,28 +64,41 @@ div.title1-row2 {
 	font-size: 32px;
 }
 
+div.title2 {
+    height: 419px;
+    top: 666px;
+    background-image: url("/img/title_bar_low.png");
+    background-repeat: no-repeat;
+    position: absolute;
+    display: none;
+}
+
 div.title2-row1 {
 	position: relative;
-	top: 122px;
+	top: 132px;
 	left: 233px;
 	height: 64px;
 	display: block;
 	font-weight: bold;
 	font-size: 60px;
+	clear: both;
 }
 
 div.title2-row2 {
 	position: relative;
-	top: 132px;
+	top: 142px;
 	left: 233px;
 	display: block;
 	font-size: 32px;
+	clear: both;
 }
 
 div.title2-row3 {
 	position: relative;
-	top: 162px;
+	top: 138px;
 	left: 233px;
 	display: block;
-	font-size: 32px;
+	font-size: 24px;
+	clear: both;
+;
 }
